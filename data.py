@@ -147,9 +147,6 @@ fig1 = px.bar(top_cities, x="city", y="title", title="Top 10 miast z najwiÄ™kszÄ
 
 
 def draw_map(df_selection):
-    # Ustawienie mapy zgodnie z granicami Polski
-    # mapbox_access_token = "pk.eyJ1IjoibXNhbGFyaXMiLCJhIjoiY2tjN3lqanZtMDlzbTJycWtkaXk1czc1eCJ9.8rt_mjGZfuJwEziXTgHaow"
-    # px.set_mapbox_access_token(mapbox_access_token)
     fig = px.density_mapbox(df_selection, lat="latitude", lon="longitude", radius=5,
                             hover_data={"title": True, 
                                         "city": True, 
