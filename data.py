@@ -192,5 +192,74 @@ if selected == "Dane ogólne":
 
 st.markdown("---")
 
+if selected == "Wizualizacja":
+    # suwak do sterowania animacją
+    min_date = df2["published_at"].min().date()
+    max_date = df2["published_at"].max().date()
+    date = st.slider("Date", min_date, max_date, min_date)
+
+    # Filtrowane dane, aby pokazać tylko oferty pracy opublikowane do wybranej daty
+    filtered_data = df2[df2["published_at"].dt.date <= date]
+
+    # Utwórz mapę pokazującą oferty pracy według lokalizacji i kategorii
+    map_data = filtered_data[["latitude", "longitude","title", "marker_icon", "skill_one", "skill_two", "skill_three"]]
+    map_data = map_data.dropna(subset=["latitude", "longitude"]) # remove rows with missing lat/lon values
+    map_chart = alt.Chart(map_data).mark_circle().encode(
+        longitude="longitude:Q",
+        latitude="latitude:Q",
+        color=alt.Color("marker_icon:N",title="Kategoria", legend=None),
+        tooltip=[
+            alt.Tooltip("title:N", title="Stanowsiko "),
+            alt.Tooltip("skill_one:N", title="1. "),
+            alt.Tooltip("skill_two:N", title="2. "),
+            alt.Tooltip("skill_three:N", title="3. ")
+        ]
+    ).properties(
+        width=600,
+        height=400
+    )
+
+    # Poziomy wykres słupkowy pokazujący najważniejsze wymagane umiejętności
+    top_skills = filtered_data["skill_one"].append(filtered_data["skill_two"]).append(filtered_data["skill_three"]).value_counts().nlargest(10)
+    chart_data = pd.DataFrame({"skill": top_skills.index, "count": top_skills.values})
+    bar_chart = alt.Chart(chart_data).mark_bar().encode(
+        y=alt.Y("skill:N", sort="-x", title="Kategoria "),
+        x= alt.X("count:Q", title="Liczba ofert ")
+    ).properties(
+        width=800,
+        height=400,
+        title=f"Top 10 wymaganych umiejętności ({date})"
+        
+    )
+
+    # Kolor i kodowanie tooltipów do wykresu słupkowego
+    tooltip = ["skill:N", "count:Q"]
+    color = alt.Color("skill:N")
+    bar_chart = bar_chart.encode(
+        color=color,
+        tooltip=tooltip
+    )
+
+    # Pokaż wykresy
+    left_column, right_coulmn= st.columns(2)
+    with left_column:
+        st.altair_chart(map_chart, use_container_width=True)
+
+    with right_coulmn:
+        st.altair_chart(bar_chart, use_container_width=True)
+ 
+ st.markdown("---")
+
+#---- Ukryj Streamlit style------
+hide_st_style = """
+    <style>
+    #MainManu {visibility: hidden;}
+    footer {visibility: hidden;}
+    header {visibility: hidden;}
+    </style>
+    """
+
+st.markdown(hide_st_style, unsafe_allow_html=True)
+
 
 
